@@ -1,0 +1,36 @@
+---
+RecipeFormatVersion: 2020-01-25
+ComponentName: AvionicsDataCollection
+ComponentVersion: '1.0.0'
+ComponentDescription: This component publishes telemetry events to AWS IoT Core and stores sensor data to the Snowcone NFS.
+ComponentPublisher: Amazon
+ComponentConfiguration:
+  DefaultConfiguration:
+    AvionicsIP: http://192.168.1.41
+    SnowconeNFS: /snowcone_nfs/EXAMPLE-AVIONICS-DATA-INGEST
+    accessControl:
+      aws.greengrass.ipc.mqttproxy:
+        AvionicsDataCollection:mqttproxy:1:
+          policyDescription: Allows publishing to the avionics telemetry topic.
+          operations:
+            - aws.greengrass#PublishToIoTCore
+          resources:
+            - flythings/+/avionics/telemetry
+Manifests:
+  - Name: Linux
+    Platform:
+      os: linux
+      architecture: "/amd64|x86_64/"
+    Lifecycle:
+      Install:
+        RequiresPrivilege: true
+        Timeout: 21600
+        Script: "{artifacts:path}/install.sh"
+      Run: "{artifacts:path}/main.py '{configuration:/AvionicsIP}' '{configuration:/SnowconeNFS}'"
+    Artifacts:
+      - Uri: s3://EXAMPLE-AVIONICS-DATA-COLLECTION/AvionicsDataCollection/1.0.0/install.sh
+        Permission:
+          Execute: OWNER
+      - Uri: s3://EXAMPLE-AVIONICS-DATA-COLLECTION/AvionicsDataCollection/1.0.0/main.py
+        Permission:
+          Execute: OWNER
